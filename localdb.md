@@ -20,62 +20,190 @@ sudo -u postgres psql
 You can also switch user to postgres and run SQL commands without entering the psql shell, but you will first have to assign a password, then you can switch users.  
 ```
 sudo passwd postgres
-su - postgres
+su - postgres 
 psql -c "\du"
 ```
 
+# Databases and Users
+The following sections will provide guidance to complete these steps:
+1. Create a new Postgres database called altebss_db.
+2. Create a system user that is the database owner, called altebss.  In Postgres a user is called a role.
+3. Create a database Schema called ebss_af.  
+4. Create a Schema owner called ebss_af.  
+5. Create a database table to test the ebss_af schema.
+
+The altebss_db is the container, which can house data models for multiple alternate funds.  The first schema being created here is the altebss_af schema (data model).  
+
 ## Create a Database
-Using the postgres super user, add the ebss application database:
+Using the postgres super user, add the altnerate ebss application database:
 ```
-create database ebss_af;
+sudo -u postgres psql
+
+create database altebss_db;
 ```
 https://www.postgresql.org/docs/13/sql-createdatabase.html  
   
-For interest you can list databases with *\l* and list tablespaces with the *\db* command.  
+For interest you can list databases with \l and list tablespaces with the \db command.  
 
-## Add A Different Owner/User for the Database
-The easiest way to login with a different user (from postgres) is to create the linux account and the database and role with the same name.  The Linux account name will be associated to a database of the same name by PostgreSQL.  
-In the linux command line:
-``
-adduser ebss_af
-``
+## Create a System User to own the Database
+The easiest way to login with a user that is not the postgres super user, is to create the linux account and database user/role with the same name.  The Linux account name will be associated to a database user of the same name by PostgreSQL by using the "peer" connection method.  
+In the linux command line:  
+```
+sudo adduser altebss
+```
+Note: if you need it you can add altebss as a super user by usign the *visudo* command and adding a new entry in the list, but that is not needed here.  
+The remove user command is "sudo userdel -r altebss" (the -r flag will remove the home directory).  
 
 Again, using the postgres super user, perform the following actions.  
-
-Create a database user/role that will be used by the ebss-af application and which has enough privilges for full DML operations, and that can also run migrations by dropping and re-recreating tables.  
+Create a database user/role that will own the database container for all alternate ebss applications.    
 ```
-create role ebss_af with password 'ebss_owner';
+sudo -u postgres psql
+
+create role altebss with password 'password';
 ```
 https://www.postgresql.org/docs/13/sql-createrole.html  
 
 Add specific priviliges to this role:  
 ```
-alter role ebss_af WITH LOGIN;
-alter role ebss_af VALID UNTIL 'Dec 31 12:00:00 2023';
+alter role altebss WITH LOGIN;
+alter role altebss VALID UNTIL 'Dec 31 12:00:00 2023';
 ```
 https://www.postgresql.org/docs/13/sql-alterrole.html  
 
-Ensure that the ebss-owner is the owner of the ebss database:
+Ensure that the altebbs role is the owner of the ebss database:
 ```
-alter database ebss_af owner to ebss_af;  
+alter database altebss_db owner to altebss;  
 ```
 https://www.postgresql.org/docs/13/sql-alterdatabase.html  
 
 
 ### Connect to the database
-Switch to the ebss_af user:  
+Switch to the altebss role/user:  
 ```
-su ebss_af
+su altebss
 ```
 Connect to the database:  
 ```
-psql ebss_af
+psql altebss_db
 ```
 Once in the psql shell, check you are in the right DB:
 ```
 select current_database();
 ```
+This role will never be actively used by the appication.  It provides protection so that the database cannot be deleted accidentally, as a schema owner has no database level privileges.   
 
-## Add a Schema
+## Create a Schema
+In Postgres, privilege management is not as sophisticated as in other RDBMS providers such as MS SQL or Oracle.  Because the alternate ebss applications will use entity frameworks to interact with the database, the user will need to perform a wide range of DDL and DML operations.  The best way to achieve this is by:
+- restricting access to a single schema within the database
+- allowing full access within the schema
+
+Create the role, then the schema and grant the schema to the role.  Show all schemas and tables.   
+```
+sudo -u postgres psql altebss_db
+
+create role ebss_af with password 'password' LOGIN;
+create schema ebss_af authorization ebss_af;
+\dn
+\dt
+```
+
+The ebss_af role now has full ownership of the schema and can execute DDL as well as perform all DML on database objects it creates and owns.  
+
+Connect to the database as the new role, set ebss_af as the defalt schema and create a table.
+```
+psql -d altebss_db -U ebss_af -h 127.0.0.1
+set schema ebss_af
+create table test_1(col1 char(5) primary key, col2 varchar(10), col3 integer);
+
+altebss_db-> \dt
+         List of relations
+ Schema  |  Name  | Type  |  Owner  
+---------+--------+-------+---------
+ ebss_af | test_1 | table | ebss_af
+(1 row)
+```
+Note: by specifying the host (-h) when connecting, you bypass the peer connection method and use md5, whcih then prompts for a password without expecting a Linux account (peer) to exist.  
+
+We can insert and delete from the table.
+```
+insert into test_1(col1, col2, col3) values ('one', 'happy', 1);
+insert into test_1(col1, col2, col3) values ('two', 'surprised', 2);
+
+select * from test_1;
+ col1  |   col2    | col3 
+-------+-----------+------
+ one   | happy     |    1
+ two   | surprised |    2
+(2 rows)
+
+delete from test_1 where col1 = 'one';
+```
+
+can we drop the table?
+```
+drop table test_1;
+DROP TABLE
+
+select * from test_1;
+ERROR:  relation "test_1" does not exist
+LINE 1: select * from test_1;
+                      ^
+```
+
+can we drop the database?
+```
+drop database altebss_db;
+ERROR:  must be owner of database altebss_db
+```
+
+can we drop the schema?
+```
+altebss_db-> \dn
+   List of schemas
+   Name   |  Owner   
+----------+----------
+ ebss_af  | ebss_af
+ ebss_afp | altebss
+ public   | postgres
+(3 rows)
+
+drop schema ebss_af;
+DROP SCHEMA
+
+altebss_db-> \dn
+   List of schemas
+   Name   |  Owner   
+----------+----------
+ ebss_afp | altebss
+ public   | postgres
+(2 rows)
+```
+Yes we can.  However we cannot drop any other schemas.
+```
+drop schema ebss_afp;
+ERROR:  must be owner of schema ebss_afp
+```
+
+
+# Useful Commands
+To find out where the database config file is:
+```
+psql altebss_db -c "show config_file"
+psql altebss_db -c "show hba_conf"
+```
+
+## DB Settings
+See particular settings:
+```
+psql altebss_db -c "show max_connectons"
+psql altebss_db -c "show shared_buffers"
+```
+To change the settings, create a postgresql.local.conf file in the same folder as the config_file.  Put your custom settings there, but don't forget to add the include line in the main settings file.  The additional line in postgresql.conf should be at the bottom in the custom section and it should look like this
+```
+include postgresql.local.conf
+```
+
+
+
 
 
