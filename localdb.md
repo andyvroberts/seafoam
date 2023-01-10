@@ -8,6 +8,7 @@ sudo service postgresql status
 sudo service postgresql start  
 sudo service postgresql stop  
 ```
+As of December 2022, the debian package is postgres 13.9.  
 
 During installation the default admin user/owner called *postgres* is created as a Linux user and as the default database administrator.  
 Connect to the psql shell and display all db users. 
@@ -17,7 +18,7 @@ sudo -u postgres psql
 \q
 ```
 
-You can also switch user to postgres and run SQL commands without entering the psql shell, but you will first have to assign a password, then you can switch users.  
+You can also switch user to postgres and run SQL commands without entering the psql shell. If you want to run commands as the postgres super user, or use it remotely or through a GUI, you will first have to assign a password.  
 ```
 sudo passwd postgres
 su - postgres 
@@ -32,7 +33,7 @@ The following sections will provide guidance to complete these steps:
 4. Create a Schema owner called ebss_af.  
 5. Create a database table to test the ebss_af schema.
 
-The altebss_db is the container, which can house data models for multiple alternate funds.  The first schema being created here is the altebss_af schema (data model).  
+The altebss_db is the container, which can house data models for multiple alternate funds.  The first schema being created here is the ebss_af schema.  
 
 ## Create a Database
 Using the postgres super user, add the altnerate ebss application database:
@@ -43,7 +44,11 @@ create database altebss_db;
 ```
 https://www.postgresql.org/docs/13/sql-createdatabase.html  
   
-For interest you can list databases with \l and list tablespaces with the \db command.  
+For interest you can list databases and tablespaces with: 
+```
+\l 
+\db
+```
 
 ## Create a System User to own the Database
 The easiest way to login with a user that is not the postgres super user, is to create the linux account and database user/role with the same name.  The Linux account name will be associated to a database user of the same name by PostgreSQL by using the "peer" connection method.  
@@ -51,10 +56,14 @@ In the linux command line:
 ```
 sudo adduser altebss
 ```
-Note: if you need it you can add altebss as a super user by usign the *visudo* command and adding a new entry in the list, but that is not needed here.  
-The remove user command is "sudo userdel -r altebss" (the -r flag will remove the home directory).  
+Note: if you need it you can add altebss as a super user by using the *visudo* command and adding a new entry in the list, but that is not needed here.  
+The remove user command is: 
+```
+sudo userdel -r altebss
+``` 
+The -r flag will remove the users home directory.  
 
-Again, using the postgres super user, perform the following actions.  
+Next, using the postgres super user, perform the following actions.  
 Create a database user/role that will own the database container for all alternate ebss applications.    
 ```
 sudo -u postgres psql
@@ -70,7 +79,7 @@ alter role altebss VALID UNTIL 'Dec 31 12:00:00 2023';
 ```
 https://www.postgresql.org/docs/13/sql-alterrole.html  
 
-Ensure that the altebbs role is the owner of the ebss database:
+Ensure that the altebbs role is the owner of the alternative ebss database:
 ```
 alter database altebss_db owner to altebss;  
 ```
@@ -93,9 +102,9 @@ select current_database();
 This role will never be actively used by the appication.  It provides protection so that the database cannot be deleted accidentally, as a schema owner has no database level privileges.   
 
 ## Create a Schema
-In Postgres, privilege management is not as sophisticated as in other RDBMS providers such as MS SQL or Oracle.  Because the alternate ebss applications will use entity frameworks to interact with the database, the user will need to perform a wide range of DDL and DML operations.  The best way to achieve this is by:
+In Postgres, privilege management is not as sophisticated as in other RDBMS providers such as MS SQL or Oracle.  Because the alternate ebss applications will use entity frameworks to interact with the database, the schema owner will need to perform a wide range of DDL and DML operations.  The best way to achieve this is by:
 - restricting access to a single schema within the database
-- allowing full access within the schema
+- but allowing full access within the schema
 
 Create the role, then the schema and grant the schema to the role.  Show all schemas and tables.   
 ```
