@@ -198,7 +198,7 @@ ERROR:  must be owner of schema ebss_afp
 To find out where the database config file is:
 ```
 psql altebss_db -c "show config_file"
-psql altebss_db -c "show hba_conf"
+psql altebss_db -c "show hba_file"
 ```
 
 ## DB Settings

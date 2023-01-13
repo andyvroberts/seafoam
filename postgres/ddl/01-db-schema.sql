@@ -16,8 +16,8 @@
  *                  Or, if remote then use the host flag in the command:
  *                  sudo -u postgres -h <hostname> psql -f 01-db-schema.sql
  *
- *  Parameters    : -v altebss_pwd='password'
- *                  -v ebss_af_pwd='password'
+ *  Parameters    : -v altebss_pwd=password
+ *                  -v ebss_af_pwd=password
  * 
  *  Notes         : This script must be run as a super-user, the default as 
  *                  shown in the usage comment is the "postgres" user.
@@ -34,14 +34,15 @@
  *                  Connect to a specific database with a specific DB user:
  *                  psql -U altebbs -d altebss_db -h 127.0.0.1
  *
- *  Example       : sudo -u postgres psql -f 01-db-schema.sql -v altebss_pwd='altebss' -v ebss_af_pwd='ebss_af'
+ *  Example       : sudo -u postgres psql -f 01-db-schema.sql -v altebss_pwd=altebss -v ebss_af_pwd=ebss_af
+ *                  (note: these are not the real passwords)
  *
  * ----------------------------------------------------------------------------
 */
 
 \set ON_ERROR_STOP on
 
-/* 1. Crate the database.  */
+/* 1. Create the database.  */
 
 DROP DATABASE IF EXISTS altebss_db;
 
@@ -49,12 +50,9 @@ CREATE DATABASE altebss_db WITH LOCALE 'en_GB.utf-8' ENCODING UTF8 TEMPLATE temp
 
 /* 2. create the DB owner and assign them the new database. */
 
-DO $$
-BEGIN
-CREATE ROLE altebss WITH PASSWORD ':altebss_pwd' LOGIN;
-EXCEPTION WHEN duplicate_object THEN RAISE NOTICE '%, skipping', SQLERRM USING ERRCODE = SQLSTATE;
-END
-$$;
+DROP ROLE IF EXISTS altebss;
+
+CREATE ROLE altebss WITH PASSWORD :'altebss_pwd' LOGIN;
 
 ALTER DATABASE altebss_db OWNER TO altebss; 
 
@@ -68,7 +66,7 @@ DROP SCHEMA IF EXISTS ebss_af;
 
 DROP ROLE IF EXISTS ebss_af;
 
-CREATE ROLE ebss_af WITH PASSWORD ':ebss_af_pwd' LOGIN;
+CREATE ROLE ebss_af WITH PASSWORD :'ebss_af_pwd' LOGIN;
 
 CREATE SCHEMA ebss_af AUTHORIZATION ebss_af;
 
