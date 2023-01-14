@@ -6,7 +6,9 @@ Add the database role (schema-owner or user) and schema DDL files, for the EBSS-
 ## Local DB Test
 [Setup a local postgres database and test the DDL scripts](postgres_localdb.md)
 
-## Database Features & Data Model
-[Understand some of the features of Postgres in Azure and see the EBSS-AF data model](database.md)
+## Database Features
+[Understand some of the features of Postgres Flexible Server in Azure](database.md)
 
+## Data Model
+[A diagram of the logical data model, which is created as a database by this project](data_model.md)
 
