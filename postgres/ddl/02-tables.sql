@@ -23,18 +23,26 @@
 \set schema ebss_af
 
 
-/* 1. Drop all tables first */
+/* 1. Drop all tables in the correct sequence for parent-child relationships. */
 
-DROP TABLE IF EXISTS address;
-DROP TABLE IF EXISTS application;
-DROP TABLE IF EXISTS bank_details;
-DROP TABLE IF EXISTS custodian_code;
+DROP TABLE IF EXISTS application_fuel;
+DROP TABLE IF EXISTS application_extract_file;
+
+DROP TABLE IF EXISTS custodian;
+
+DROP TABLE IF EXISTS validation;
 DROP TABLE IF EXISTS document;
+
+DROP TABLE IF EXISTS application;
+DROP TABLE IF EXISTS person;
+DROP TABLE IF EXISTS bank_details;
+DROP TABLE IF EXISTS address;
+DROP TABLE IF EXISTS scheme;
+
 DROP TABLE IF EXISTS extract_file;
 DROP TABLE IF EXISTS fuel;
-DROP TABLE IF EXISTS person;
-DROP TABLE IF EXISTS scheme;
-DROP TABLE IF EXISTS validation;
+
+
 
 /* 2. Create all tables without any foreign key relationships. */
 /* Primary keys defined as "serial" are integers.  bigserial are bigint */
@@ -82,7 +90,7 @@ CREATE TABLE bank_details (
     business_account char(1) DEFAULT 'N'
 );
 
-CREATE TABLE custodian_code (
+CREATE TABLE custodian (
     id serial CONSTRAINT custodian_code_pk PRIMARY KEY,
     custodian_code varchar(10),
     authority_name varchar(256),
@@ -136,4 +144,18 @@ CREATE TABLE validation (
     validation_result varchar(12),
     validation_result_text varchar(256),
     dms_batch_id numeric(5)
+);
+
+/* 1. Create all many-to-many join tables */
+
+CREATE TABLE application_fuel (
+    application_id integer,
+    fuel_id integer,
+    CONSTRAINT app_fuels_pk PRIMARY KEY (application_id, fuel_id)
+);
+
+CREATE TABLE application_extract_file (
+    application_id integer,
+    extract_file_id integer,
+    CONSTRAINT app_extracts_pk PRIMARY KEY (application_id, extract_file_id)
 );
