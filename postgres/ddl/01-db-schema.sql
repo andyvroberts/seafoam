@@ -70,4 +70,8 @@ CREATE ROLE ebss_af WITH PASSWORD :'ebss_af_pwd' LOGIN;
 
 CREATE SCHEMA ebss_af AUTHORIZATION ebss_af;
 
+/* 4. Add the table statistics package pg_stat_statements. */
+
+CREATE EXTENSION pg_stat_statements;
+
 \quit

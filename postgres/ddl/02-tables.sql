@@ -55,7 +55,11 @@ CREATE TABLE address (
     town varchar(128),
     county varchar(128),
     postcode varchar(10),
-    custodian_code varchar(10)
+    custodian_code varchar(10),
+    created_date timestamp with time zone DEFAULT (now() at time zone 'utc'),
+    created_by varchar(128),
+    modified_date timestamp with time zone,
+    modified_by varchar(128)
 );
 
 CREATE TABLE application (
@@ -78,6 +82,10 @@ CREATE TABLE application (
     mobile_residence_type varchar(32),
     boat_licence_type varchar(32),
     care_home_funding_type varchar(32),
+    created_date timestamp with time zone DEFAULT (now() at time zone 'utc'),
+    created_by varchar(128),
+    modified_date timestamp with time zone,
+    modified_by varchar(128),
     CONSTRAINT user_ref UNIQUE (reference)
 );
 
@@ -87,7 +95,11 @@ CREATE TABLE bank_details (
     sort_code numeric(6),
     account_number numeric(8),
     roll_number varchar(12),
-    business_account char(1) DEFAULT 'N'
+    business_account char(1) DEFAULT 'N',
+    created_date timestamp with time zone DEFAULT (now() at time zone 'utc'),
+    created_by varchar(128),
+    modified_date timestamp with time zone,
+    modified_by varchar(128)
 );
 
 CREATE TABLE custodian (
@@ -96,7 +108,11 @@ CREATE TABLE custodian (
     authority_name varchar(256),
     region varchar(256),
     country varchar(64),
-    file_folder varchar(256)
+    file_folder varchar(256),
+    created_date timestamp with time zone DEFAULT (now() at time zone 'utc'),
+    created_by varchar(128),
+    modified_date timestamp with time zone,
+    modified_by varchar(128)
 );
 
 CREATE TABLE document (
@@ -104,7 +120,11 @@ CREATE TABLE document (
     application_id integer,
     document_type varchar(64),
     document_location varchar(256),
-    document_status varchar(32)
+    document_status varchar(32),
+    created_date timestamp with time zone DEFAULT (now() at time zone 'utc'),
+    created_by varchar(128),
+    modified_date timestamp with time zone,
+    modified_by varchar(128)
 );
 
 CREATE TABLE extract_file (
@@ -112,12 +132,20 @@ CREATE TABLE extract_file (
     file_type varchar(64),
     file_location varchar(256),
     file_status varchar(32),
-    custodian_code varchar(10)
+    custodian_code varchar(10),
+    created_date timestamp with time zone DEFAULT (now() at time zone 'utc'),
+    created_by varchar(128),
+    modified_date timestamp with time zone,
+    modified_by varchar(128)
 );
 
 CREATE TABLE fuel (
     id serial CONSTRAINT fuel_pk PRIMARY KEY,
-    fuel_type varchar(64)
+    fuel_type varchar(64),
+    created_date timestamp with time zone DEFAULT (now() at time zone 'utc'),
+    created_by varchar(128),
+    modified_date timestamp with time zone,
+    modified_by varchar(128)
 );
 
 CREATE TABLE person (
@@ -127,14 +155,22 @@ CREATE TABLE person (
     date_of_birth varchar(10),
     email varchar(64),
     phone varchar(17),
-    mobile varchar(17)
+    mobile varchar(17),
+    created_date timestamp with time zone DEFAULT (now() at time zone 'utc'),
+    created_by varchar(128),
+    modified_date timestamp with time zone,
+    modified_by varchar(128)
 );
 
 CREATE TABLE scheme (
     id serial CONSTRAINT scheme_pk PRIMARY KEY,
     scheme_code varchar(32),
     scheme_description varchar(256),
-    payment_value numeric(8,2)
+    payment_value numeric(8,2),
+    created_date timestamp with time zone DEFAULT (now() at time zone 'utc'),
+    created_by varchar(128),
+    modified_date timestamp with time zone,
+    modified_by varchar(128)
 );
 
 CREATE TABLE validation (
@@ -143,7 +179,11 @@ CREATE TABLE validation (
     validation_type varchar(32),
     validation_result varchar(12),
     validation_result_text varchar(256),
-    dms_batch_id numeric(5)
+    dms_batch_id numeric(5),
+    created_date timestamp with time zone DEFAULT (now() at time zone 'utc'),
+    created_by varchar(128),
+    modified_date timestamp with time zone,
+    modified_by varchar(128)
 );
 
 /* 1. Create all many-to-many join tables */
@@ -151,11 +191,19 @@ CREATE TABLE validation (
 CREATE TABLE application_fuel (
     application_id integer,
     fuel_id integer,
+    created_date timestamp with time zone DEFAULT (now() at time zone 'utc'),
+    created_by varchar(128),
+    modified_date timestamp with time zone,
+    modified_by varchar(128),
     CONSTRAINT app_fuels_pk PRIMARY KEY (application_id, fuel_id)
 );
 
 CREATE TABLE application_extract_file (
     application_id integer,
     extract_file_id integer,
+    created_date timestamp with time zone DEFAULT (now() at time zone 'utc'),
+    created_by varchar(128),
+    modified_date timestamp with time zone,
+    modified_by varchar(128),
     CONSTRAINT app_extracts_pk PRIMARY KEY (application_id, extract_file_id)
 );

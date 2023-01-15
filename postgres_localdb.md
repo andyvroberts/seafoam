@@ -200,14 +200,55 @@ To find out where the database config file is:
 psql altebss_db -c "show config_file"
 psql altebss_db -c "show hba_file"
 ```
+or if in the psql
+```
+show config_file;
+show hba_file;
+```
 
-## DB Settings
+## Enable Table Statistics Collection
+These are options that must be made to the configuration file.  
+```
+sudo -u postgres psql -c "show config_file"
+
+               config_file
+-----------------------------------------
+ /etc/postgresql/13/main/postgresql.conf
+(1 row)
+```
+
+The pg_stat_statements package is needed to collect ongoing statistics.  Usually it is now included by default within an installation, but if it must be added them make sure to set the preload libraries.  
+```
+shared_preload_libraries = 'pg_stat_statements'	# (change requires restart)
+```
+For table and index statistics, edit the config file and make sure that the tracking you require is un-commented:  
+```
+#------------------------------------------------------------------------------
+# STATISTICS
+#------------------------------------------------------------------------------
+
+# - Query and Index Statistics Collector -
+
+track_activities = on
+track_counts = on
+track_io_timing = off
+#track_functions = none                 # none, pl, all
+track_activity_query_size = 1024        # (change requires restart)
+stats_temp_directory = '/var/run/postgresql/13-main.pg_stat_tmp'
+```
+
+Note: For config file settings to take effect, the postgres service must be restarted.
+```
+sudo postgresql service restart
+```
+
+## DB Settings Using Include
 See particular settings:
 ```
 psql altebss_db -c "show max_connectons"
 psql altebss_db -c "show shared_buffers"
 ```
-To change the settings, create a postgresql.local.conf file in the same folder as the config_file.  Put your custom settings there, but don't forget to add the include line in the main settings file.  The additional line in postgresql.conf should be at the bottom in the custom section and it should look like this
+To add custom settings whilst not changing the defaults, you can create a postgresql.local.conf file in the same folder as the config_file.  Put your custom settings there, but don't forget to add the include line in the main settings file.  The additional line in postgresql.conf should be at the bottom in the custom section and it should look like this
 ```
 include postgresql.local.conf
 ```
