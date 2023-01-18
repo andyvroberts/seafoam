@@ -53,3 +53,10 @@ CREATE INDEX IF NOT EXISTS address_cust_code_idx ON address (custodian_code);
 /* Create a unique index on the lookup table for custodian code, a query should never return multiple rows. */
 
 CREATE UNIQUE INDEX IF NOT EXISTS custodian_code_ux ON custodian (custodian_code);
+
+/* 3. Other Indexes. */
+
+/* Indexex on primary keys and unique constraints are automatically created by postgres */
+/* https://www.postgresql.org/docs/13/indexes-unique.html */
+
+\q
