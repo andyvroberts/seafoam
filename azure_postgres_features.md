@@ -1,5 +1,6 @@
 
 # Postgres Flexible Server
+Postgres v11 to 14, Azure General Purpose SKU Type.
 
 
 | Feature | Details | Notes |
@@ -17,8 +18,8 @@
 | Transaction Log | Every 15 minutes (or WAL archive) | [See the notes on Write-Ahead-Log archive](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-backup-restore#backup-overview) |
 | Backup Durability | LRS = 11 nines / ZRS = 12 nines / GRS = 16 nines | [Backpup redundancy options](https://learn.microsoft.com/en-gb/azure/postgresql/flexible-server/concepts-backup-restore#backup-redundancy-options) |
 | Backup Retention | 7 to 35 days | [7 days is the default](https://learn.microsoft.com/en-gb/azure/postgresql/flexible-server/concepts-backup-restore#backup-retention) |
-| Full Restore | Yes, from a differential snapshot | [by using point-in-time-restore (PITR)]((https://learn.microsoft.com/en-gb/azure/postgresql/flexible-server/concepts-backup-restore#point-in-time-recovery)) |
-| Point in Time Restore | yes | See the same notes as given in the "Full Restore" feature above. |
+| Full Restore | Yes, from a differential snapshot, creates a new DB in the same region. | [by using point-in-time-restore (PITR)](https://learn.microsoft.com/en-gb/azure/postgresql/flexible-server/concepts-backup-restore#point-in-time-recovery) |
+| Point in Time Restore | yes | [PITR](https://learn.microsoft.com/en-gb/azure/postgresql/flexible-server/concepts-backup-restore#point-in-time-recovery) |
 | | **Performance** |
 | Max Storage Size | 32GB to 16TB  | [See the disk space and I/O's per second limits](https://learn.microsoft.com/en-gb/azure/postgresql/flexible-server/concepts-compute-storage#storage)  |
 | Max Sessions | 859 to 5,000 | [Connection SKU Limits](https://learn.microsoft.com/en-gb/azure/postgresql/flexible-server/concepts-limits#maximum-connections) |
